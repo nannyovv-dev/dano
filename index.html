@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Sparkle - ประกายแห่งดวงดาว</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Montserrat:wght@200;300;400&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-euro: 'Syncopate', 'Montserrat', sans-serif;
+            --font-th: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+            --black-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 4px 10px rgba(0,0,0,0.9), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: var(--font-th);
+            color: #fff;
+        }
+
+        /* หน้าจอป้องกันบราว์เซอร์บล็อกเสียง */
+        #audio-unlock-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.5s ease;
+        }
+        #audio-unlock-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .unlock-title {
+            font-family: var(--font-euro);
+            font-size: 1.5rem;
+            letter-spacing: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .unlock-sub {
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* ระบบพื้นหลังแนวนอนขยายใหญ่และการเบลอขอบ */
+        .bg-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-blur {
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            top: -5%;
+            left: -5%;
+            background: url('https://i.ibb.co/8471t5QW/IMG-1830.jpg') center center / cover no-repeat;
+            filter: blur(25px) brightness(0.4);
+            transform: scale(1.1);
+            transition: background 1s ease;
+        }
+
+        .bg-main {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('https://i.ibb.co/8471t5QW/IMG-1830.jpg') center center / cover no-repeat;
+            z-index: 2;
+            transition: background 1s ease, opacity 1s ease;
+            animation: softPan 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes softPan {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.03) translate(5px, 2px); }
+        }
+
+        /* หน้าสกรีนหลัก */
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ชื่อเกมแนวคมบางหรูหราพร้อมขอบดำหนาแน่นกันกลืนกับภาพ */
+        .game-title-box {
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: 6px;
+        }
+
+        .game-title-th {
+            font-size: 2.8rem;
+            font-weight: 300;
+            text-shadow: var(--black-shadow);
+            margin-bottom: 8px;
+        }
+
+        .game-title-en {
+            font-family: var(--font-euro);
+            font-size: 1.2rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            text-shadow: var(--black-shadow);
+        }
+
+        /* ระบบปุ่มเมนู */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 280px;
+        }
+
+        .btn-system {
+            font-family: var(--font-euro);
+            background: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            padding: 15px 30px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        .btn-system:hover {
+            border-color: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2), 0 4px 15px rgba(0,0,0,0.8);
+            background: #0d0d0d;
+        }
+
+        /* เอฟเฟกต์ประกายสีดำ */
+        .dark-sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 0 10px #000, inset 0 0 4px rgba(0,0,0,1);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            animation: explode 0.5s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes explode {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            50% { opacity: 0.9; }
+            100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+        }
+
+        /* หน้าโหลดเรื่องเล่า (Play) */
+        #story-screen {
+            background: rgba(0, 0, 0, 0.93);
+            padding: 40px;
+        }
+
+        .story-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 650px;
+            width: 100%;
+        }
+
+        .story-text {
+            font-size: 1.15rem;
+            font-weight: 300;
+            line-height: 2;
+            text-align: center;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 30px;
+            min-height: 160px;
+        }
+
+        .condition-alert {
+            color: #ff3b30;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .story-choices {
+            display: flex;
+            gap: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s ease;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .story-choices.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .btn-choice {
+            background: #000;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 12px 35px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-choice:hover {
+            border-color: #fff;
+            background: #111;
+        }
+        .btn-choice.not-ready:hover {
+            border-color: #ff3b30;
+            color: #ff3b30;
+        }
+
+        /* ระบบเลเยอร์และโครงสร้าง Pop-up */
+        .popup-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ป๊อปอัพ 1: หน้าดาวน์โหลดเมื่อกดพร้อมแล้ว */
+        .popup-white {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+            padding: 30px 40px;
+            border-radius: 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 380px;
+        }
+
+        /* ป๊อปอัพต้อนรับหลังจากโหลดเสร็จ */
+        .popup-welcome {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #000000;
+            padding: 25px 35px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 380px;
+            line-height: 1.6;
+        }
+
+        /* ป๊อปอัพ 2: หน้าแจ้งเตือนเมื่อกดไม่พร้อม */
+        .popup-black {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 30px 40px;
+            border-radius: 0px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 380px;
+            text-align: center;
+        }
+
+        .popup-text-red {
+            color: #ff3b30;
+            font-size: 1.25rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .btn-popup-close {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.4);
+            color: #fff;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+        .btn-popup-close:hover {
+            border-color: #fff;
+            background: #fff;
+            color: #000;
+        }
+
+        /* แพนด้าหมุนได้ */
+        .panda-loader {
+            width: 80px;
+            height: 70px;
+            position: relative;
+            margin-bottom: 20px;
+            animation: spin 3s linear infinite;
+        }
+
+        .panda-face {
+            width: 70px;
+            height: 60px;
+            background: #fff;
+            border: 3px solid #000;
+            border-radius: 50% 50% 45% 45%;
+            position: absolute;
+            bottom: 0; left: 5px;
+        }
+
+        .panda-ear {
+            width: 22px;
+            height: 22px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+        }
+        .panda-ear.left { left: 0; }
+        .panda-ear.right { right: 0; }
+
+        .panda-eye {
+            width: 16px;
+            height: 20px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 15px;
+        }
+        .panda-eye.left { left: 12px; transform: rotate(15deg); }
+        .panda-eye.right { right: 12px; transform: rotate(-15deg); }
+        .panda-eye::after {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px; left: 5px;
+        }
+
+        .panda-nose {
+            width: 10px;
+            height: 6px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 16px; left: 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* หลอดโหลดป๊อปอัพ */
+        .popup-progress-container {
+            width: 280px;
+            height: 12px;
+            background: #e0e0e0;
+            border: 2px solid #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .popup-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #000;
+        }
+
+        .popup-wait-text {
+            font-size: 0.95rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: #000000;
+            margin-top: 5px;
+        }
+
+        /* หน้าโหลดคำแนะนำสไตล์แพนด้าแบบปกติ */
+        #guide-screen {
+            background: rgba(245, 245, 245, 0.98);
+            color: #000;
+        }
+
+        .progress-container {
+            width: 300px;
+            height: 14px;
+            background: #e0e0e0;
+            border: 2px solid #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #000;
+        }
+
+        .progress-text {
+            font-family: var(--font-euro);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .guide-box {
+            max-width: 550px;
+            min-height: 120px;
+            text-align: center;
+            font-size: 1.1rem;
+            line-height: 1.9;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            padding: 0 20px;
+        }
+
+        .btn-skip {
+            margin-top: 30px;
+            background: transparent;
+            border: 2px solid #000;
+            color: #000;
+            padding: 10px 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+        .btn-skip:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        /* ==================== โครงสร้างระบบภายในเกม (Gameplay Zone) ==================== */
+        #gameplay-screen {
+            background: #000;
+            z-index: 20;
+        }
+
+        /* เอฟเฟกต์แฟลชสีขาวตอนเปลี่ยนฉาก */
+        .white-flash {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #fff;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+        .white-flash.active {
+            opacity: 1;
+        }
+        
+        /* เอฟเฟกต์แสงอาทิตย์วาบตอนเช้า */
+        .sun-flash {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #fffae6;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.2s ease-in-out;
+        }
+        .sun-flash.active {
+            opacity: 1;
+        }
+
+        /* ภาพใหม่แบบเต็มจอตอนเช้า */
+        .morning-fullscreen-img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('https://i.ibb.co/4g4k210b/0668-EA5-B-51-B5-438-C-BFF4-BAAC66-C65-EF5.png') center center / cover no-repeat;
+            z-index: 15;
+            opacity: 0;
+            transition: opacity 2.5s ease;
+            pointer-events: none;
+        }
+        .morning-fullscreen-img.show {
+            opacity: 1;
+            pointer-events: auto;
+            animation: gentleZoom 30s ease-in-out infinite alternate;
+        }
+
+        @keyframes gentleZoom {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.06) translate(-1%, -1%); }
+        }
+
+        /* เลเยอร์แสงกระทบกันยามเช้าแบบละมุน */
+        .light-glow-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 80% 20%, rgba(255, 240, 210, 0.4) 0%, rgba(255,255,255,0) 60%),
+                        linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(0,0,0,0) 100%);
+            z-index: 16;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 3s ease;
+        }
+        .morning-fullscreen-img.show + .light-glow-overlay {
+            opacity: 1;
+            animation: lightPulse 7s ease-in-out infinite alternate;
+        }
+
+        @keyframes lightPulse {
+            0% { opacity: 0.3; filter: brightness(1); }
+            50% { opacity: 0.6; filter: brightness(1.1); }
+            100% { opacity: 0.4; filter: brightness(0.95); }
+        }
+
+        /* กล่องเนื้อหาฉากเตียงนอน ที่เลื่อนมาจากทางขวา */
+        .bed-scene-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+            padding: 30px;
+            z-index: 5;
+        }
+
+        .bed-scene-container.slide-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* ภาพจิบิดาเรียนและนาโนบนเตียง */
+        .chibi-couple-img {
+            max-height: 45%;
+            max-width: 85%;
+            object-fit: contain;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            animation: floatingChibi 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatingChibi {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-6px) rotate(0.5deg); }
+        }
+
+        /* กล่องแสดงบทสนทนา */
+        .dialogue-box {
+            width: 90%;
+            max-width: 750px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #fff;
+            padding: 20px 25px;
+            min-height: 140px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .dialogue-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 4px;
+            align-self: flex-start;
+        }
+
+        .dialogue-content {
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1.7;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.95);
+            flex-grow: 1;
+        }
+
+        /* ระบบกล่องรับคำตอบของผู้เล่น */
+        .player-input-area {
+            margin-top: 15px;
+            display: none;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .player-text-field {
+            flex-grow: 1;
+            background: #000;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 1rem;
+            font-family: var(--font-th);
+            outline: none;
+        }
+
+        .btn-send-reply {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 1px;
+            font-family: var(--font-th);
+            transition: all 0.2s;
+        }
+        .btn-send-reply:hover {
+            background: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="audio-unlock-screen" onclick="unlockAudioAndStart()">
+        <div class="unlock-title">STELLAR SPARKLE</div>
+        <div class="unlock-sub">TAP TO START GAME</div>
+    </div>
+
+    <audio id="end-scene-music" src="https://straight-olive-oluzhkgr.edgeone.dev/v1c044g50000d50erqfog65uusrtorng.mp3" preload="auto" loop></audio>
+
+    <div class="bg-container">
+        <div class="bg-blur" id="global-bg-blur"></div>
+        <div class="bg-main" id="global-bg-main"></div>
+    </div>
+
+    <div id="main-menu" class="screen">
+        <div class="game-title-box">
+            <h1 class="game-title-th">ประกายแห่งดวงดาว</h1>
+            <h2 class="game-title-en">Stellar Sparkle</h2>
+        </div>
+        <div class="menu-buttons">
+            <button class="btn-system" id="btn-play">PLAY</button>
+            <button class="btn-system" id="btn-guide">INSTRUCTION</button>
+        </div>
+    </div>
+
+    <div id="story-screen" class="screen hidden">
+        <div class="story-container">
+            <div class="story-text" id="story-typing"></div>
+            <div class="condition-alert" id="condition-alert">*เงื่อนไข หากกดไม่พร้อมเกมจะไม่ได้เริ่มสักทีนะเพราะฉะนั้นกดเริ่มเถอะ เชื่อผม*</div>
+            <div class="story-choices" id="story-choices">
+                <button class="btn-choice" id="btn-ready">1. พร้อมแล้ว</button>
+                <button class="btn-choice not-ready" id="btn-not-ready">2. ยังไม่พร้อม</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup-ready-layer" class="popup-overlay">
+        <div class="popup-white" id="popup-loading-box">
+            <div class="panda-loader">
+                <div class="panda-ear left"></div>
+                <div class="panda-ear right"></div>
+                <div class="panda-face">
+                    <div class="panda-eye left"></div>
+                    <div class="panda-eye right"></div>
+                    <div class="panda-nose"></div>
+                </div>
+            </div>
+            <div class="popup-progress-container">
+                <div class="popup-progress-bar" id="popup-load-bar"></div>
+            </div>
+            <div id="popup-percent-text" style="font-family: var(--font-euro); font-weight:700; font-size:0.9rem; margin-bottom:5px; color:#000;">0%</div>
+            <div class="popup-wait-text">รอสักครู่...</div>
+        </div>
+
+        <div class="popup-welcome" id="popup-welcome-box" style="display: none;">
+             <div id="welcome-text-typing"></div>
+        </div>
+    </div>
+
+    <div id="popup-not-ready-layer" class="popup-overlay">
+        <div class="popup-black">
+            <div class="popup-text-red">“เลือกใหม่เถอะ เชื่อผม”</div>
+            <button class="btn-popup-close" id="btn-popup-close">ย้อนกลับ</button>
+        </div>
+    </div>
+
+    <div id="guide-screen" class="screen hidden">
+        <div class="panda-loader">
+            <div class="panda-ear left"></div>
+            <div class="panda-ear right"></div>
+            <div class="panda-face">
+                <div class="panda-eye left"></div>
+                <div class="panda-eye right"></div>
+                <div class="panda-nose"></div>
+            </div>
+        </div>
+        <div class="progress-text" id="progress-percent">0%</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="load-bar"></div>
+        </div>
+        <div class="guide-box" id="guide-typing"></div>
+        <button class="btn-skip" id="btn-skip" style="display:none;">CLOSE</button>
+    </div>
+
+    <div id="gameplay-screen" class="screen hidden">
+        <div class="white-flash" id="trans-flash"></div>
+        <div class="sun-flash" id="sun-flash"></div>
+        
+        <div class="morning-fullscreen-img" id="morning-img"></div>
+        <div class="light-glow-overlay" id="light-glow"></div>
+        
+        <div class="bed-scene-container" id="bed-scene-content">
+            <img src="https://i.ibb.co/QFYR1nmf/IMG-1831.png" alt="Darien and Nano Chibi" class="chibi-couple-img">
+            
+            <div class="dialogue-box">
+                <div>
+                    <div class="dialogue-name" id="char-name">ดาเรียน</div>
+                    <div class="dialogue-content" id="dialogue-text"></div>
+                </div>
+                
+                <div class="player-input-area" id="nano-input-zone">
+                    <input type="text" class="player-text-field" id="nano-reply-input" placeholder="พิมพ์คำตอบของคุณที่นี่..." autocomplete="off">
+                    <button class="btn-send-reply" id="btn-submit-reply">ส่ง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ระบบเสียงวิทยาศาสตร์ (Web Audio API) ---
+        let audioCtx = null;
+        let rainInterval = null; 
+        let dialogueStep = 1; 
+
+        // ฟังก์ชันเริ่มระบบเสียงเมื่อหน้าจอถูกคลิกครั้งแรกสุด
+        function unlockAudioAndStart() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // ซ่อนหน้าต่างปลดล็อก
+            document.getElementById('audio-unlock-screen').classList.add('hidden');
+            
+            // เล่นเพลงประกอบเบาๆ ทันที (ระดับเสียง 15%) เป็น Ambient Background
+            const music = document.getElementById('end-scene-music');
+            music.volume = 0.15;
+            music.play().catch(err => console.log("Audio play blocked:", err));
+        }
+
+        function playClickSound() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        }
+
+        function playKeyboardSound() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const randFreq = 180 + (Math.random() * 80);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(randFreq, now);
+            osc.frequency.exponentialRampToValueAtTime(30, now + 0.04);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.04);
+        }
+
+        function startRainSound() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            rainInterval = setInterval(() => {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(8000 + Math.random() * 3000, now);
+                
+                gain.gain.setValueAtTime(0.015, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.03);
+            }, 40);
+        }
+
+        function stopRainSound() {
+            if(rainInterval) {
+                clearInterval(rainInterval);
+                rainInterval = null;
+            }
+        }
+
+        function playRustleSound() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            
+            const bufferSize = audioCtx.sampleRate * 0.25;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(250, now); 
+            
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+            
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            noise.start(now);
+            noise.stop(now + 0.25);
+        }
+
+        // --- ค่อยๆ เร่งระดับเสียงเพลงขึ้นแบบละมุน (Fade-in / Fade up Volume) ---
+        function playEndMusicWithFade() {
+            const music = document.getElementById('end-scene-music');
+            let vol = music.volume; // เริ่มจากระดับเสียงปัจจุบันที่เปิดไว้คลอๆ
+            const fadeInterval = setInterval(() => {
+                if (vol < 0.8) {
+                    vol += 0.05;
+                    music.volume = vol;
+                } else {
+                    clearInterval(fadeInterval);
+                }
+            }, 150);
+        }
+
+        // --- ระบบเอฟเฟกต์ประกายสีดำ ---
+        window.addEventListener('click', (e) => {
+            if(e.target.id === 'audio-unlock-screen' || e.target.tagName === 'BUTTON' || e.target.closest('.popup-white') || e.target.closest('.popup-black') || e.target.closest('.popup-welcome') || e.target.closest('.dialogue-box')) return;
+            const sparkle = document.createElement('div');
+            sparkle.classList.add('dark-sparkle');
+            sparkle.style.left = `${e.clientX}px`;
+            sparkle.style.top = `${e.clientY}px`;
+            document.body.appendChild(sparkle);
+            setTimeout(() => { sparkle.remove(); }, 500);
+        });
+
+        // --- ระบบพิมพ์ข้อความทีละตัว ---
+        function typeWriter(element, text, speed, callback) {
+            element.innerHTML = '';
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if(text.charAt(i) !== ' ' && text.charAt(i) !== '\n') {
+                        playKeyboardSound();
+                    }
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            type();
+        }
+
+        // --- ควบคุมหน้าต่างจัดการ Element ---
+        const mainMenu = document.getElementById('main-menu');
+        const storyScreen = document.getElementById('story-screen');
+        const guideScreen = document.getElementById('guide-screen');
+        const gameplayScreen = document.getElementById('gameplay-screen');
+        
+        const popupReady = document.getElementById('popup-ready-layer');
+        const popupNotReady = document.getElementById('popup-not-ready-layer');
+        const popupLoadingBox = document.getElementById('popup-loading-box');
+        const popupWelcomeBox = document.getElementById('popup-welcome-box');
+
+        const bgBlur = document.getElementById('global-bg-blur');
+        const bgMain = document.getElementById('global-bg-main');
+
+        // --- ฟังก์ชันกดปุ่ม PLAY ---
+        document.getElementById('btn-play').addEventListener('click', () => {
+            playClickSound();
+            mainMenu.classList.add('hidden');
+            storyScreen.classList.remove('hidden');
+
+            const storyText = "เมื่อวันที่ พฤหัสบดี ที่ 9 กรกฎาคม พ.ศ. ผมได้พบกับเขาและได้ทำความรู้จักกัน และใช่นั้นคือ ‘นาโน‘ ในตอนแรกผมกับทำความรู้จักกับเขาเพื่อหาเพื่อนก็เท่านั้น แต่นานวันเข้าเราก็เริ่มสนิทกันและได้ทำการเริ่มเปิดใจคุยกัน ทำให้รู้จักกันมากยิ่งขึ้นไปอีก แต่ไม่รู้สิว่าตอนไหน จู่ๆผมก็รักเขาโดยไม่ทราบสาเหตุด้วยซ่ะเนี่ยสิ ?\n\nแต่ก็ช่างมันเถอะ เรามาเริ่มเกมประกายแห่งดวงดาวของเราดีกว่า พร้อมแล้วใช่ไหม?";
+            
+            setTimeout(() => {
+                typeWriter(document.getElementById('story-typing'), storyText, 45, () => {
+                    document.getElementById('condition-alert').style.opacity = '1';
+                    document.getElementById('story-choices').classList.add('show');
+                });
+            }, 500);
+        });
+
+        // --- ทางเลือก: พร้อมแล้ว ---
+        document.getElementById('btn-ready').addEventListener('click', () => {
+            playClickSound();
+            popupReady.classList.add('active');
+            popupLoadingBox.style.display = 'flex';
+            popupWelcomeBox.style.display = 'none';
+            
+            const popLoadBar = document.getElementById('popup-load-bar');
+            const popPercent = document.getElementById('popup-percent-text');
+            
+            let progress = 0;
+            popLoadBar.style.width = '0%';
+            popPercent.innerText = '0%';
+
+            const interval = setInterval(() => {
+                progress += 2;
+                popLoadBar.style.width = `${progress}%`;
+                popPercent.innerText = `${progress}%`;
+                
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        popupLoadingBox.style.display = 'none';
+                        popupWelcomeBox.style.display = 'block';
+                        
+                        const welcomeTxt = "ยินดีต้อนรับสู่เกม\nกำลังพาเข้าไปยังเกม";
+                        typeWriter(document.getElementById('welcome-text-typing'), welcomeTxt, 50, () => {
+                            setTimeout(() => {
+                                popupReady.classList.remove('active');
+                                storyScreen.classList.add('hidden');
+                                enterGameCore(); 
+                            }, 1800);
+                        });
+                    }, 400);
+                }
+            }, 40); 
+        });
+
+        // --- ฟังก์ชันขับเคลื่อนการเริ่มฉากเนื้อเรื่องภายในเกมจริง ---
+        function enterGameCore() {
+            gameplayScreen.classList.remove('hidden');
+            
+            bgMain.style.backgroundImage = "url('https://i.ibb.co/QvfZ50Pb/IMG-1835.png')";
+            bgBlur.style.backgroundImage = "url('https://i.ibb.co/QvfZ50Pb/IMG-1835.png')";
+            bgMain.style.opacity = "1";
+            
+            // ดึงเสียงเพลงคลอลงเล็กน้อยตอนที่ฝนตกเพื่อให้ได้บรรยากาศสมจริง
+            document.getElementById('end-scene-music').volume = 0.05;
+            startRainSound();
+
+            setTimeout(() => {
+                const flash = document.getElementById('trans-flash');
+                flash.classList.add('active');
+                
+                setTimeout(() => {
+                    stopRainSound();
+                    
+                    // ปรับเสียงเพลงขึ้นมาในระดับปกติระหว่างบทสนทนา
+                    document.getElementById('end-scene-music').volume = 0.2;
+                    
+                    bgMain.style.backgroundImage = "linear-gradient(45deg, #000000 25%, transparent 25%), linear-gradient(-45deg, #000000 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #000000 75%), linear-gradient(-45deg, transparent 75%, #000000 75%)";
+                    bgMain.style.backgroundColor = "#ffffff";
+                    bgMain.style.backgroundSize = "40px 40px";
+                    bgMain.style.backgroundPosition = "0 0, 0 20px, 20px -20px, -20px 0px";
+                    bgBlur.style.backgroundImage = "none";
+                    bgBlur.style.backgroundColor = "#ffffff";
+                    
+                    const bedContent = document.getElementById('bed-scene-content');
+                    bedContent.classList.add('slide-in');
+                    
+                    flash.classList.remove('active');
+                    
+                    setTimeout(() => {
+                        dialogueStep = 1;
+                        const dDialogue1 = "“ฝนตกอีกแล้วแฮะ หนาวรึเปล่า”";
+                        typeWriter(document.getElementById('dialogue-text'), dDialogue1, 50, () => {
+                            document.getElementById('nano-input-zone').style.display = 'flex';
+                            document.getElementById('nano-reply-input').focus();
+                        });
+                    }, 800);
+
+                }, 800); 
+
+            }, 4000); 
+        }
+
+        // --- ระบบกดส่งข้อความและการรันเนื้อเรื่องต่อเนื่อง ---
+        function submitNanoReply() {
+            const replyInput = document.getElementById('nano-reply-input');
+            const userText = replyInput.value.trim();
+            if(userText === "") return; 
+            
+            playClickSound();
+            document.getElementById('nano-input-zone').style.display = 'none';
+            
+            if (dialogueStep === 1) {
+                document.getElementById('char-name').innerText = "นาโน";
+                document.getElementById('dialogue-text').innerText = userText;
+                replyInput.value = ""; 
+                
+                setTimeout(() => {
+                    playRustleSound();
+                    
+                    setTimeout(() => {
+                        document.getElementById('char-name').innerText = "ดาเรียน";
+                        const dDialogue2 = "”ถ้าหนาวก็กอดไว้แน่นๆหน่อยสิ…ถ้าป่วยขึ้นมา กูไม่รับผิดชอบหรอกนะ…“";
+                        typeWriter(document.getElementById('dialogue-text'), dDialogue2, 50, () => {
+                            dialogueStep = 2;
+                            document.getElementById('nano-input-zone').style.display = 'flex';
+                            document.getElementById('nano-reply-input').placeholder = "ต่อบทสนทนากับดาเรียนที่นี่...";
+                            document.getElementById('nano-reply-input').focus();
+                        });
+                    }, 800);
+                }, 2000);
+
+            } else if (dialogueStep === 2) {
+                document.getElementById('char-name').innerText = "นาโน";
+                document.getElementById('dialogue-text').innerText = userText;
+                replyInput.value = "";
+                
+                setTimeout(() => {
+                    playRustleSound();
+                    setTimeout(() => {
+                        document.getElementById('char-name').innerText = "ดาเรียน";
+                        const dDialogue3 = "“หึ... ปากดีจังนะ มัวแต่พูดแบบนี้ระวังจะไม่ได้นอนทั้งคืนล่ะ...”";
+                        typeWriter(document.getElementById('dialogue-text'), dDialogue3, 50, () => {
+                            dialogueStep = 3;
+                            document.getElementById('nano-input-zone').style.display = 'flex';
+                            document.getElementById('nano-reply-input').placeholder = "ตอบกลับดาเรียนอีกครั้ง...";
+                            document.getElementById('nano-reply-input').focus();
+                        });
+                    }, 800);
+                }, 2000);
+            } else if (dialogueStep === 3) {
+                document.getElementById('char-name').innerText = "นาโน";
+                document.getElementById('dialogue-text').innerText = userText;
+                replyInput.value = "";
+
+                setTimeout(() => {
+                    playRustleSound();
+                    setTimeout(() => {
+                        document.getElementById('char-name').innerText = "ดาเรียน";
+                        const dDialogue4 = "“นอนต่อเถอะ…อย่ารีบลุกเลย…”";
+                        typeWriter(document.getElementById('dialogue-text'), dDialogue4, 50, () => {
+                            setTimeout(() => {
+                                const sunFlash = document.getElementById('sun-flash');
+                                sunFlash.classList.add('active');
+                                
+                                setTimeout(() => {
+                                    document.getElementById('bed-scene-content').style.display = 'none';
+                                    document.getElementById('morning-img').classList.add('show');
+                                    
+                                    // เร่งเสียงเพลงให้ดังกระหึ่มขึ้นเต็มที่ในฉากจบอันแสนอบอุ่น
+                                    playEndMusicWithFade();
+                                    
+                                    sunFlash.classList.remove('active');
+                                }, 1200);
+                            }, 1500);
+                        });
+                    }, 800);
+                }, 2000);
+            }
+        }
+
+        document.getElementById('btn-submit-reply').addEventListener('click', submitNanoReply);
+        document.getElementById('nano-reply-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') submitNanoReply();
+        });
+
+        // --- ทางเลือก: ยังไม่พร้อม ---
+        document.getElementById('btn-not-ready').addEventListener('click', () => {
+            playClickSound();
+            popupNotReady.classList.add('active');
+        });
+
+        document.getElementById('btn-popup-close').addEventListener('click', () => {
+            playClickSound();
+            popupNotReady.classList.remove('active');
+        });
+
+        // --- กดปุ่ม คำแนะนำ ---
+        document.getElementById('btn-guide').addEventListener('click', () => {
+            playClickSound();
+            mainMenu.classList.add('hidden');
+            guideScreen.classList.remove('hidden');
+            
+            const loadBar = document.getElementById('load-bar');
+            const percentText = document.getElementById('progress-percent');
+            const guideTyping = document.getElementById('guide-typing');
+            const btnSkip = document.getElementById('btn-skip');
+            
+            loadBar.style.width = '0%';
+            percentText.innerText = '0%';
+            guideTyping.innerHTML = '';
+            btnSkip.style.display = 'none';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2; 
+                loadBar.style.width = `${progress}%`;
+                percentText.innerText = `${progress}%`;
+                
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const txt = "เกมนี้เป็นเกมสไตล์สบายๆ ปล่อยใจและเล่นกันเลย ถึงจะดูไม่เยอะมากแต่ก็พยายามสร้างด้วยใจมาให้เล่นนะ และกติกาเดิม ผู้เล่นมีเพียง “นาโน” เท่านั้น เกมถูกสร้างโดยคนที่รักคุณ ขอให้สนุก";
+                        typeWriter(guideTyping, txt, 45, () => {
+                            btnSkip.style.display = 'block';
+                        });
+                    }, 400);
+                }
+            }, 40); 
+        });
+
+        document.getElementById('btn-skip').addEventListener('click', () => {
+            playClickSound();
+            guideScreen.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
