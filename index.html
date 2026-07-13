@@ -684,6 +684,57 @@
         .btn-send-reply:hover {
             background: #ccc;
         }
+
+        /* ==================== โครงสร้างหน้าต่างฉากจบ (Ending Screen) ==================== */
+        .ending-content-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s ease;
+        }
+        .ending-content-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .ending-card {
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 85%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        .ending-title {
+            font-family: var(--font-euro);
+            font-size: 2rem;
+            letter-spacing: 8px;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .ending-message {
+            font-size: 1.15rem;
+            line-height: 2;
+            font-weight: 300;
+            margin-bottom: 35px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .ending-credits {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -790,6 +841,18 @@
                     <input type="text" class="player-text-field" id="nano-reply-input" placeholder="พิมพ์คำตอบของคุณที่นี่..." autocomplete="off">
                     <button class="btn-send-reply" id="btn-submit-reply">ส่ง</button>
                 </div>
+            </div>
+        </div>
+
+        <div class="ending-content-overlay" id="ending-overlay">
+            <div class="ending-card">
+                <div class="ending-title">HAPPY ENDING</div>
+                <div class="ending-message" id="ending-msg-typing"></div>
+                <div class="ending-credits">
+                    STELLAR SPARKLE — ประกายแห่งดวงดาว<br>
+                    ขอบคุณที่เข้ามาเป็นเรื่องราวดีๆ และเป็นดวงดาวที่ส่องสว่างในใจของผมเสมอมา
+                </div>
+                <button class="btn-system" id="btn-restart" style="margin: 0 auto; width: 200px;">PLAY AGAIN</button>
             </div>
         </div>
     </div>
@@ -926,7 +989,7 @@
 
         // --- ระบบเอฟเฟกต์ประกายสีดำ ---
         window.addEventListener('click', (e) => {
-            if(e.target.id === 'audio-unlock-screen' || e.target.tagName === 'BUTTON' || e.target.closest('.popup-white') || e.target.closest('.popup-black') || e.target.closest('.popup-welcome') || e.target.closest('.dialogue-box')) return;
+            if(e.target.id === 'audio-unlock-screen' || e.target.tagName === 'BUTTON' || e.target.closest('.popup-white') || e.target.closest('.popup-black') || e.target.closest('.popup-welcome') || e.target.closest('.dialogue-box') || e.target.closest('.ending-card')) return;
             const sparkle = document.createElement('div');
             sparkle.classList.add('dark-sparkle');
             sparkle.style.left = `${e.clientX}px`;
@@ -1053,6 +1116,7 @@
                     bgBlur.style.backgroundColor = "#ffffff";
                     
                     const bedContent = document.getElementById('bed-scene-content');
+                    bedContent.style.display = 'flex';
                     bedContent.classList.add('slide-in');
                     
                     flash.classList.remove('active');
@@ -1135,12 +1199,24 @@
                                 
                                 setTimeout(() => {
                                     document.getElementById('bed-scene-content').style.display = 'none';
+                                    document.getElementById('bed-scene-content').classList.remove('slide-in');
                                     document.getElementById('morning-img').classList.add('show');
                                     
                                     // เร่งเสียงเพลงให้ดังกระหึ่มขึ้นเต็มที่ในฉากจบอันแสนอบอุ่น
                                     playEndMusicWithFade();
                                     
                                     sunFlash.classList.remove('active');
+
+                                    // เปิดตัว Overlay เครดิตตอนจบ
+                                    setTimeout(() => {
+                                        const endingOverlay = document.getElementById('ending-overlay');
+                                        endingOverlay.classList.add('show');
+                                        
+                                        const finalLoveLetter = "และแล้วค่ำคืนอันหนาวเหน็บที่มีเสียงฝนพรำก็ผ่านพ้นไป... แทนที่ด้วยแสงอาทิตย์ยามเช้าอันแสนอบอุ่นที่สาดส่องเข้ามา ดวงดาวดวงนี้อาจไม่ได้เปล่งประกายที่สุดบนท้องฟ้าอันกว้างใหญ่ แต่สำหรับผม... ประกายของดวงดาวดวงที่ชื่อว่า 'นาโน' จะงดงามและสว่างไสวอยู่ในหัวใจของผมตลอดไป... รักคุณนะ";
+                                        
+                                        typeWriter(document.getElementById('ending-msg-typing'), finalLoveLetter, 45);
+                                    }, 1000);
+
                                 }, 1200);
                             }, 1500);
                         });
@@ -1202,6 +1278,27 @@
         document.getElementById('btn-skip').addEventListener('click', () => {
             playClickSound();
             guideScreen.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+        });
+
+        // --- ปุ่มกดเริ่มเกมใหม่อีกครั้ง (Restart Game) ---
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            playClickSound();
+            
+            // รีเซ็ตการแสดงผลเลเยอร์ต่างๆ
+            document.getElementById('ending-overlay').classList.remove('show');
+            document.getElementById('morning-img').classList.remove('show');
+            gameplayScreen.classList.add('hidden');
+            
+            // รีเซ็ตพื้นหลังหลักกลับเป็นภาพเดิม
+            bgMain.style.background = "url('https://i.ibb.co/8471t5QW/IMG-1830.jpg') center center / cover no-repeat";
+            bgBlur.style.background = "url('https://i.ibb.co/8471t5QW/IMG-1830.jpg') center center / cover no-repeat";
+            bgBlur.style.filter = "blur(25px) brightness(0.4)";
+            
+            // ปรับระดับเสียงเพลงกลับมาคลอๆ เบาๆ
+            document.getElementById('end-scene-music').volume = 0.15;
+            
+            // พากลับหน้าเมนูหลัก
             mainMenu.classList.remove('hidden');
         });
     </script>
